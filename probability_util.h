@@ -4,19 +4,18 @@
 #include <set>
 
 typedef std::vector<double> EventsProbabilities;
-typedef std::set<unsigned> EventsNumbers;
-typedef std::set<unsigned> IntCombination;
-typedef std::set<IntCombination> IntCombinationSet;
+typedef std::set<unsigned> NumbersSet;
+typedef std::set<NumbersSet> CombinationsSet;
 
 unsigned GetAtLeastCount();
 EventsProbabilities GetEventsProbabilities();
 
 double EventsOnlyProbability(const EventsProbabilities& probabilities,
-                             const EventsNumbers& active_nums);
+  const NumbersSet& active_nums);
 
-IntCombinationSet MakeCombinations(const EventsNumbers& numbers, int count);
+CombinationsSet MakeCombinations(const NumbersSet& numbers, int count);
 
-EventsNumbers MakeEventsIndexesSet(const EventsProbabilities& probabilities);
+NumbersSet MakeEventsIndexesSet(const EventsProbabilities& probabilities);
 
 double AtLeastEventsProbability(const EventsProbabilities& probabilities,
                                 unsigned count);

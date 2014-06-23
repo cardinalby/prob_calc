@@ -20,7 +20,7 @@ EventsProbabilities GetEventsProbabilities()
 }
 
 double EventsOnlyProbability(const EventsProbabilities& probabilities,
-                             const EventsNumbers& active_nums)
+                             const NumbersSet& active_nums)
 {
   double product = 1;
   for (unsigned i = 0; i < probabilities.size(); ++i)
@@ -45,15 +45,15 @@ long long CombinationsCount(int k, int n)
   return Fact(n) / (Fact(k) * Fact(n - k));
 }
 
-IntCombinationSet MakeCombinations(const EventsNumbers& numbers, int count)
+CombinationsSet MakeCombinations(const NumbersSet& numbers, int count)
 {
-  IntCombinationSet result;
+  CombinationsSet result;
   
   if (!count) throw std::exception();
 
   if (count == numbers.size())
   {
-    result.insert(IntCombination(numbers.begin(), numbers.end()));
+    result.insert(NumbersSet(numbers.begin(), numbers.end()));
     return result;
   }
 
@@ -62,7 +62,7 @@ IntCombinationSet MakeCombinations(const EventsNumbers& numbers, int count)
   {
     for (auto number = numbers.begin(); number != numbers.end(); ++number)
     {
-      IntCombination single_combination;
+      NumbersSet single_combination;
       single_combination.insert(*number);
       result.insert(single_combination);
     }
@@ -71,13 +71,13 @@ IntCombinationSet MakeCombinations(const EventsNumbers& numbers, int count)
     
   // Combinations with (count - 1) without current number
   unsigned first_num = *numbers.begin();
-  EventsNumbers truncated_numbers = numbers;
+  NumbersSet truncated_numbers = numbers;
   truncated_numbers.erase(first_num);
-  IntCombinationSet subcombinations = MakeCombinations(truncated_numbers, count - 1);
+  CombinationsSet subcombinations = MakeCombinations(truncated_numbers, count - 1);
 
   for (auto subcombination = subcombinations.begin(); subcombination != subcombinations.end(); ++subcombination)
   {
-    IntCombination cmb = *subcombination;
+    NumbersSet cmb = *subcombination;
     // Add current number
     cmb.insert(first_num);
     result.insert(cmb);
@@ -90,9 +90,9 @@ IntCombinationSet MakeCombinations(const EventsNumbers& numbers, int count)
   return result;
 }
 
-EventsNumbers MakeEventsIndexesSet(const EventsProbabilities& probabilities)
+NumbersSet MakeEventsIndexesSet(const EventsProbabilities& probabilities)
 {
-  EventsNumbers result;
+  NumbersSet result;
   for (unsigned i = 0; i < probabilities.size(); ++i)
     result.insert(i);
   return result;
@@ -101,14 +101,14 @@ EventsNumbers MakeEventsIndexesSet(const EventsProbabilities& probabilities)
 double AtLeastEventsProbability(const EventsProbabilities& probabilities,
                                 unsigned count)
 {
-  EventsNumbers all_event_numbers = MakeEventsIndexesSet(probabilities);
+  NumbersSet all_event_numbers = MakeEventsIndexesSet(probabilities);
 
   std::cout << "Events: " << probabilities.size() << std::endl
             << "Make combinations with events count:" << std::endl;
-  IntCombinationSet combinations_set;
+  CombinationsSet combinations_set;
   for (unsigned i = count; i <= probabilities.size(); ++i)
     {
-    IntCombinationSet particulat_combinations = MakeCombinations(all_event_numbers, i);
+    CombinationsSet particulat_combinations = MakeCombinations(all_event_numbers, i);
     auto combinations_by_formula = CombinationsCount(i, all_event_numbers.size());
 
     if (particulat_combinations.size() != combinations_by_formula)
