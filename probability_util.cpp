@@ -12,11 +12,9 @@ unsigned GetAtLeastCount()
 
 EventsProbabilities GetEventsProbabilities()
 {
-  double p[] = {0.5, 0.5, 0.5, 0.5,
-                0.16667, 0.16667, 0.16667, 0.16667,
-                0.33333, 0.33333, 0.33333, 0.33333};
-
-  // double p[] = {0.5, 0.5, 0.5, 0.5, 0.16667, 0.33333, 0.33333, 0.23};
+  double p[] = { 0.5, 0.5, 0.5, 0.5,
+                 0.16667, 0.16667, 0.16667, 0.16667,
+                 0.33333, 0.33333, 0.33333, 0.33333 };
 
   return EventsProbabilities(p, p + sizeof(p)/sizeof(*p));
 }
@@ -33,36 +31,62 @@ double EventsOnlyProbability(const EventsProbabilities& probabilities,
   return product;
 }
 
+long long Fact(int arg)
+{
+  if (arg <= 1)
+    return 1;
+  return arg * Fact(arg - 1);
+}
+
+long long CombinationsCount(int k, int n)
+{
+  if (k > n) throw std::exception();
+
+  return Fact(n) / (Fact(k) * Fact(n - k));
+}
+
 IntCombinationSet MakeCombinations(const EventsNumbers& numbers, int count)
 {
   IntCombinationSet result;
-  for (auto number = numbers.begin(); number != numbers.end(); ++number)
+  
+  if (!count) throw std::exception();
+
+  if (count == numbers.size())
   {
-    if (!count) throw std::exception();
+    result.insert(IntCombination(numbers.begin(), numbers.end()));
+    return result;
+  }
 
-    unsigned next_count = count - 1;
-    bool no_more_combinations = !next_count || (numbers.size() <= 1);
-
-    if (no_more_combinations)
+  // combinations with 1 element
+  if (!(count - 1) || (numbers.size() <= 1))
+  {
+    for (auto number = numbers.begin(); number != numbers.end(); ++number)
     {
       IntCombination single_combination;
       single_combination.insert(*number);
       result.insert(single_combination);
     }
-    else
-    {
-      EventsNumbers truncated_numbers = numbers;
-      truncated_numbers.erase(*number);
-      IntCombinationSet additions = MakeCombinations(truncated_numbers, next_count);
-
-      for (auto addition = additions.begin(); addition != additions.end(); ++addition)
-      {
-        IntCombination combination = *addition;
-        combination.insert(*number);
-        result.insert(combination);
-      }
-    }
+    return result;
   }
+    
+  // Combinations with (count - 1) without current number
+  unsigned first_num = *numbers.begin();
+  EventsNumbers truncated_numbers = numbers;
+  truncated_numbers.erase(first_num);
+  IntCombinationSet subcombinations = MakeCombinations(truncated_numbers, count - 1);
+
+  for (auto subcombination = subcombinations.begin(); subcombination != subcombinations.end(); ++subcombination)
+  {
+    IntCombination cmb = *subcombination;
+    // Add current number
+    cmb.insert(first_num);
+    result.insert(cmb);
+  }
+
+  // Combinations with (count) without current number
+  subcombinations = MakeCombinations(truncated_numbers, count);
+  result.insert(subcombinations.begin(), subcombinations.end());
+
   return result;
 }
 
@@ -84,10 +108,15 @@ double AtLeastEventsProbability(const EventsProbabilities& probabilities,
   IntCombinationSet combinations_set;
   for (unsigned i = count; i <= probabilities.size(); ++i)
     {
-    PrintAtLineStart(i << ", total: " << combinations_set.size());
-
     IntCombinationSet particulat_combinations = MakeCombinations(all_event_numbers, i);
+    auto combinations_by_formula = CombinationsCount(i, all_event_numbers.size());
+
+    if (particulat_combinations.size() != combinations_by_formula)
+      throw std::exception();
+
     combinations_set.insert(particulat_combinations.begin(), particulat_combinations.end());
+
+    PrintAtLineStart(i << ", total: " << combinations_set.size());
     }
 
   std::cout << std::endl << "Combinations total: " << combinations_set.size() << std::endl
